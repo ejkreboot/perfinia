@@ -24,8 +24,30 @@ export const ACCOUNT_TYPE_OPTIONS: AccountTypeOption[] = [
 	{ type: 'other_liability', subtype: 'other', label: 'Other Liability', isAsset: false }
 ];
 
+// Plaid subtypes we don't already have a curated label for (our own manual
+// account picker doesn't offer these, but linked institutions can return
+// them freely — cd, hsa, and money market read oddly under naive title-case).
+const SUBTYPE_LABEL_OVERRIDES: Record<string, string> = {
+	cd: 'CD',
+	hsa: 'HSA',
+	ira: 'IRA',
+	'money market': 'Money Market',
+	'cash management': 'Cash Management',
+	'401k': '401(k)',
+	'401a': '401(a)',
+	'403b': '403(b)',
+	'457b': '457(b)'
+};
+
+function titleCase(value: string): string {
+	return value.replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 export function accountTypeLabel(type: string, subtype: string | null): string {
-	return ACCOUNT_TYPE_OPTIONS.find((o) => o.type === type && o.subtype === subtype)?.label ?? type;
+	const curated = ACCOUNT_TYPE_OPTIONS.find((o) => o.type === type && o.subtype === subtype);
+	if (curated) return curated.label;
+	if (!subtype) return titleCase(type);
+	return SUBTYPE_LABEL_OVERRIDES[subtype] ?? titleCase(subtype);
 }
 
 const GROUP_LABELS: Record<string, string> = {

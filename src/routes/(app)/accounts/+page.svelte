@@ -2,6 +2,7 @@
 	import { enhance } from '$app/forms';
 	import { accountGroupLabel, accountGroupOrder, accountTypeLabel } from '$lib/accountTypes';
 	import { formatCurrency } from '$lib/format';
+	import PlaidLinkButton from '$lib/components/PlaidLinkButton.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -37,12 +38,12 @@
 			<h1 class="font-display text-2xl font-semibold">Accounts</h1>
 			<p class="mt-1 text-sm text-ink/60">Track balances across every account, manual or linked.</p>
 		</div>
-		<a
-			href="/accounts/new"
-			class="rounded-lg bg-gold px-4 py-2 text-sm font-medium text-ink transition hover:brightness-95"
-		>
-			Add account
-		</a>
+		<div class="flex items-center gap-3">
+			<a href="/accounts/new" class="text-sm text-ink/60 underline hover:text-ink">
+				Add manual account
+			</a>
+			<PlaidLinkButton />
+		</div>
 	</div>
 
 	<div class="mb-10 grid grid-cols-3 gap-4">

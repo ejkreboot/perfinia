@@ -18,6 +18,17 @@ declare global {
 		// interface PageState {}
 		// interface Platform {}
 	}
+
+	interface Window {
+		// Loaded at runtime from https://cdn.plaid.com/link/v2/stable/link-initialize.js
+		Plaid: {
+			create(config: {
+				token: string;
+				onSuccess: (publicToken: string, metadata: unknown) => void;
+				onExit?: (err: unknown, metadata: unknown) => void;
+			}): { open: () => void };
+		};
+	}
 }
 
 export {};
