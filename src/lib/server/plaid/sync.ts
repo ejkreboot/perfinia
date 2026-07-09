@@ -3,6 +3,7 @@ import { plaidClient } from './client';
 import { decryptToken } from '$lib/server/crypto';
 import { supabaseAdmin } from '$lib/server/supabaseAdmin';
 import { categorizeTransaction } from './categorize';
+import type { Json } from '$lib/database.types';
 
 const LIABILITY_TYPES = new Set(['credit', 'loan']);
 
@@ -151,7 +152,7 @@ async function upsertTransaction(userId: string, tx: Transaction): Promise<void>
 			merchant_entity_id: tx.merchant_entity_id,
 			plaid_category_primary: primaryCategory,
 			plaid_category_detailed: tx.personal_finance_category?.detailed ?? null,
-			plaid_raw: tx,
+			plaid_raw: tx as unknown as Json,
 			is_transfer: primaryCategory === 'TRANSFER_IN' || primaryCategory === 'TRANSFER_OUT',
 			...categoryFields
 		},
