@@ -1,11 +1,24 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { invalidateAll } from '$app/navigation';
 	import { accountGroupLabel, accountGroupOrder, accountTypeLabel } from '$lib/accountTypes';
 	import { formatCurrency } from '$lib/format';
 	import PlaidLinkButton from '$lib/components/PlaidLinkButton.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+
+	let syncing = $state(false);
+
+	async function syncNow() {
+		syncing = true;
+		try {
+			await fetch('/api/plaid/sync', { method: 'POST' });
+			await invalidateAll();
+		} finally {
+			syncing = false;
+		}
+	}
 
 	let totalAssets = $derived(
 		data.accounts.filter((a) => a.is_asset).reduce((sum, a) => sum + (a.current_balance ?? 0), 0)
@@ -42,6 +55,14 @@
 			<a href="/accounts/new" class="text-sm text-ink/60 underline hover:text-ink">
 				Add manual account
 			</a>
+			<button
+				type="button"
+				onclick={syncNow}
+				disabled={syncing}
+				class="text-sm text-ink/60 hover:text-ink disabled:opacity-50"
+			>
+				{syncing ? 'Syncing…' : 'Sync now'}
+			</button>
 			<PlaidLinkButton />
 		</div>
 	</div>

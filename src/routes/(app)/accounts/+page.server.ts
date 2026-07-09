@@ -1,7 +1,10 @@
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
+import { maybeSyncStaleItems } from '$lib/server/plaid/autoSync';
 
-export const load: PageServerLoad = async ({ locals: { supabase } }) => {
+export const load: PageServerLoad = async ({ locals: { supabase, user } }) => {
+	await maybeSyncStaleItems(user!.id);
+
 	const { data: accounts, error } = await supabase
 		.from('accounts')
 		.select(
