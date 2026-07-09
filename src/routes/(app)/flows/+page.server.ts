@@ -2,6 +2,11 @@ import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { FLOW_COLOR_TOKENS } from '$lib/flowColors';
 
+function startOfMonth(): string {
+	const now = new Date();
+	return new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+}
+
 export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 	const { data: flows, error } = await supabase
 		.from('flows')
@@ -11,7 +16,26 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 
 	if (error) throw error;
 
-	return { flows: flows ?? [] };
+	const { data: monthTransactions } = await supabase
+		.from('transactions')
+		.select('amount, categories ( flow_id )')
+		.gte('date', startOfMonth());
+
+	const directionByFlow = new Map((flows ?? []).map((f) => [f.id, f.direction]));
+
+	const actualByFlow = new Map<string, number>();
+	for (const tx of monthTransactions ?? []) {
+		const flowId = tx.categories?.flow_id;
+		if (!flowId) continue;
+		// Outflow flows: positive = spend. Inflow flows: flip sign so positive =
+		// income received (Plaid's convention has inflow transactions negative).
+		const signedAmount = directionByFlow.get(flowId) === 'inflow' ? -tx.amount : tx.amount;
+		actualByFlow.set(flowId, (actualByFlow.get(flowId) ?? 0) + signedAmount);
+	}
+
+	return {
+		flows: (flows ?? []).map((f) => ({ ...f, actualThisMonth: actualByFlow.get(f.id) ?? 0 }))
+	};
 };
 
 function parseTarget(raw: FormDataEntryValue | null): number | null {

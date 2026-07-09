@@ -153,6 +153,26 @@
 					</form>
 				</div>
 
+				{#if flow.monthly_target}
+					{@const pct = Math.min(100, (flow.actualThisMonth / flow.monthly_target) * 100)}
+					{@const overTarget = flow.actualThisMonth > flow.monthly_target}
+					<div class="mt-3">
+						<div class="h-1.5 overflow-hidden rounded-full bg-ink/10">
+							<div
+								class="h-full rounded-full {overTarget ? 'bg-plum' : 'bg-sage'}"
+								style="width: {pct}%"
+							></div>
+						</div>
+						<p class="mt-1 text-xs text-ink/50">
+							{formatCurrency(flow.actualThisMonth)} of {formatCurrency(flow.monthly_target)} this
+							month
+							{#if overTarget}
+								<span class="text-plum">· over target</span>
+							{/if}
+						</p>
+					</div>
+				{/if}
+
 				{#if editingId === flow.id}
 					<form
 						method="POST"

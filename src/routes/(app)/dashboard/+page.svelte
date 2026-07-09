@@ -161,4 +161,27 @@
 			</ul>
 		{/if}
 	</div>
+
+	{#if data.recurring.length > 0}
+		<div class="mt-8 rounded-xl border border-ink/10 bg-white p-6">
+			<h2 class="text-sm font-semibold text-ink">Recurring & subscriptions</h2>
+			<p class="mt-1 text-xs text-ink/50">
+				Detected from repeating merchant, amount, and timing — not something you set up.
+			</p>
+			<ul class="mt-4 divide-y divide-ink/5">
+				{#each data.recurring as item (item.key)}
+					<li class="flex items-center gap-3 py-2.5 text-sm">
+						<span class="flex-1 truncate text-ink">{item.label}</span>
+						<span class="text-xs text-ink/40">{item.cadence}</span>
+						<span class="font-mono-nums w-24 text-right text-ink/60"
+							>{formatCurrency(item.averageAmount)}</span
+						>
+						<span class="font-mono-nums w-28 text-right font-medium text-ink"
+							>{formatCurrency(item.monthlyEquivalent)}/mo</span
+						>
+					</li>
+				{/each}
+			</ul>
+		</div>
+	{/if}
 </div>

@@ -1,10 +1,16 @@
 import type { PageServerLoad } from './$types';
 import { maybeSyncStaleItems } from '$lib/server/plaid/autoSync';
 import { computeNetWorthSeries } from '$lib/netWorthSeries';
+import { detectRecurringMerchants } from '$lib/server/recurring';
 
 function startOfMonth(): string {
 	const now = new Date();
 	return new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+}
+
+function monthsAgo(n: number): string {
+	const now = new Date();
+	return new Date(now.getFullYear(), now.getMonth() - n, now.getDate()).toISOString().slice(0, 10);
 }
 
 export const load: PageServerLoad = async ({ locals: { supabase, user } }) => {
@@ -114,6 +120,15 @@ export const load: PageServerLoad = async ({ locals: { supabase, user } }) => {
 		.select('id', { count: 'exact', head: true })
 		.eq('category_source', 'uncategorized');
 
+	const { data: recurringCandidates } = await supabase
+		.from('transactions')
+		.select('name, merchant_name, merchant_entity_id, date, amount')
+		.eq('is_transfer', false)
+		.gt('amount', 0)
+		.gte('date', monthsAgo(12));
+
+	const recurring = detectRecurringMerchants(recurringCandidates ?? []).slice(0, 6);
+
 	return {
 		netWorth,
 		netWorthSeries,
@@ -129,6 +144,7 @@ export const load: PageServerLoad = async ({ locals: { supabase, user } }) => {
 			hasShiftEstimate: !!shiftEstimate
 		},
 		recentTransactions: recentTransactions ?? [],
-		uncategorizedCount: uncategorizedCount ?? 0
+		uncategorizedCount: uncategorizedCount ?? 0,
+		recurring
 	};
 };
