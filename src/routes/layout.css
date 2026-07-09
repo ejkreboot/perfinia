@@ -1,2 +1,48 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/forms';
+
+/*
+ * Perfinia design tokens. The flow colors (gold/channel/clay/sage/plum/mist)
+ * are not decorative — they are the fixed palette used everywhere a Flow is
+ * shown (nav, charts, badges), so the same color always means the same flow
+ * across the whole app. See DEFAULT_FLOWS in categorySeed.ts for the flow
+ * they each represent.
+ */
+@theme {
+	--font-display: 'Fraunces', ui-serif, Georgia, serif;
+	--font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+	--font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+	--color-ink: #16262d;
+	--color-ink-soft: #1f333b;
+	--color-paper: #eff2ed;
+	--color-paper-soft: #e4e8e1;
+
+	/* Income */
+	--color-gold: #e4a73b;
+	/* Fixed & Essential */
+	--color-channel: #4b7a78;
+	/* Discretionary & Goals */
+	--color-clay: #c97b4a;
+	/* Savings & Investing */
+	--color-sage: #6b8f71;
+	/* Debt Paydown */
+	--color-plum: #7a4b5e;
+	/* Transfers (excluded from totals) */
+	--color-mist: #8b8f8a;
+}
+
+body {
+	font-family: var(--font-sans);
+	background-color: var(--color-paper);
+	color: var(--color-ink);
+}
+
+.font-display {
+	font-family: var(--font-display);
+}
+
+.font-mono-nums {
+	font-family: var(--font-mono);
+	font-variant-numeric: tabular-nums;
+}
