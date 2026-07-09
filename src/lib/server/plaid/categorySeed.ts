@@ -9,37 +9,53 @@ export type FlowSeed = {
 	direction: 'inflow' | 'outflow';
 	countsTowardTotals: boolean;
 	sortOrder: number;
+	color: string;
 };
 
+// Color values are token names from the app's flow palette (see
+// src/routes/layout.css @theme) — every chart/badge that renders a flow
+// resolves its color via var(--color-{token}), so the same flow always
+// reads as the same color everywhere in the app.
 export const DEFAULT_FLOWS: FlowSeed[] = [
-	{ slug: 'income', name: 'Income', direction: 'inflow', countsTowardTotals: true, sortOrder: 0 },
+	{
+		slug: 'income',
+		name: 'Income',
+		direction: 'inflow',
+		countsTowardTotals: true,
+		sortOrder: 0,
+		color: 'gold'
+	},
 	{
 		slug: 'fixed_essential',
 		name: 'Fixed & Essential',
 		direction: 'outflow',
 		countsTowardTotals: true,
-		sortOrder: 1
+		sortOrder: 1,
+		color: 'channel'
 	},
 	{
 		slug: 'discretionary_goals',
 		name: 'Discretionary & Goals',
 		direction: 'outflow',
 		countsTowardTotals: true,
-		sortOrder: 2
+		sortOrder: 2,
+		color: 'clay'
 	},
 	{
 		slug: 'savings_investing',
 		name: 'Savings & Investing',
 		direction: 'outflow',
 		countsTowardTotals: true,
-		sortOrder: 3
+		sortOrder: 3,
+		color: 'sage'
 	},
 	{
 		slug: 'debt_paydown',
 		name: 'Debt Paydown',
 		direction: 'outflow',
 		countsTowardTotals: true,
-		sortOrder: 4
+		sortOrder: 4,
+		color: 'plum'
 	},
 	{
 		// Internal money movement (card payments funded by tracked spend, ATM
@@ -48,6 +64,7 @@ export const DEFAULT_FLOWS: FlowSeed[] = [
 		slug: 'transfers',
 		name: 'Transfers',
 		direction: 'outflow',
+		color: 'mist',
 		countsTowardTotals: false,
 		sortOrder: 5
 	}
