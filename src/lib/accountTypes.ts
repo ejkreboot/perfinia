@@ -76,3 +76,11 @@ export function accountGroupOrder(type: string): number {
 	const index = GROUP_ORDER.indexOf(type);
 	return index === -1 ? GROUP_ORDER.length : index;
 }
+
+// A user-set nickname wins over the institution's own name: Plaid hands back
+// generic labels ("Checking", "Total Checking") that repeat across accounts at
+// the same bank, and `name` is overwritten on every re-link, so the nickname
+// lives in its own column.
+export function accountDisplayName(account: { name: string; nickname?: string | null }): string {
+	return account.nickname?.trim() || account.name;
+}

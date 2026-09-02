@@ -7,6 +7,9 @@ const basePath =
 const configuration = new Configuration({
 	basePath,
 	baseOptions: {
+		// Axios defaults to no timeout: without this a stalled Plaid call hangs
+		// the request forever with no error anywhere.
+		timeout: 30_000,
 		headers: {
 			'PLAID-CLIENT-ID': PLAID_CLIENT_ID,
 			'PLAID-SECRET': PLAID_SECRET

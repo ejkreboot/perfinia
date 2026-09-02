@@ -5,9 +5,14 @@ import { plaidClient } from '$lib/server/plaid/client';
 import { encryptToken } from '$lib/server/crypto';
 import { supabaseAdmin } from '$lib/server/supabaseAdmin';
 import { syncItem, isAssetAccountType } from '$lib/server/plaid/sync';
+import { checkRateLimit } from '$lib/server/rateLimit';
+import { releaseSupersededItems } from '$lib/server/plaid/remove';
 
 export const POST: RequestHandler = async ({ request, locals: { user } }) => {
 	if (!user) kitError(401, 'Not authenticated');
+
+	const allowed = await checkRateLimit(`plaid_exchange:${user.id}`, 10, 60 * 60);
+	if (!allowed) kitError(429, 'Too many requests. Try again later.');
 
 	const body = await request.json();
 	const publicToken = body?.public_token as string | undefined;
@@ -33,18 +38,37 @@ export const POST: RequestHandler = async ({ request, locals: { user } }) => {
 
 	const { ciphertext, iv, tag } = encryptToken(accessToken);
 
+	// plaid_item_id is globally unique. Re-linking in update mode can return the
+	// item_id we already hold, so upsert rather than insert — but check the owner
+	// first, the same way the accounts loop below does, so a plain insert failure
+	// can't be turned into one user's item being reassigned to another.
+	const { data: existingItem } = await supabaseAdmin
+		.from('plaid_items')
+		.select('id, user_id')
+		.eq('plaid_item_id', plaidItemId)
+		.maybeSingle();
+
+	if (existingItem && existingItem.user_id !== user.id) {
+		kitError(409, 'This institution is already linked by another user');
+	}
+
 	const { data: itemRow, error: itemError } = await supabaseAdmin
 		.from('plaid_items')
-		.insert({
-			user_id: user.id,
-			plaid_item_id: plaidItemId,
-			institution_id: institutionId,
-			institution_name: institutionName,
-			access_token_ciphertext: ciphertext,
-			access_token_iv: iv,
-			access_token_tag: tag,
-			status: 'active'
-		})
+		.upsert(
+			{
+				user_id: user.id,
+				plaid_item_id: plaidItemId,
+				institution_id: institutionId,
+				institution_name: institutionName,
+				access_token_ciphertext: ciphertext,
+				access_token_iv: iv,
+				access_token_tag: tag,
+				status: 'active',
+				error_code: null,
+				error_message: null
+			},
+			{ onConflict: 'plaid_item_id' }
+		)
 		.select('id')
 		.single();
 
@@ -56,6 +80,18 @@ export const POST: RequestHandler = async ({ request, locals: { user } }) => {
 	const today = new Date().toISOString().slice(0, 10);
 
 	for (const acct of accountsResponse.data.accounts) {
+		// plaid_account_id is globally unique, but not scoped to a user — check
+		// first so a shared/joint bank account already linked by another user
+		// can't be silently reassigned (and its transaction history along with
+		// it) via the upsert's onConflict below.
+		const { data: existingAccount } = await supabaseAdmin
+			.from('accounts')
+			.select('id, user_id')
+			.eq('plaid_account_id', acct.account_id)
+			.maybeSingle();
+
+		if (existingAccount && existingAccount.user_id !== user.id) continue;
+
 		const { data: accountRow } = await supabaseAdmin
 			.from('accounts')
 			.upsert(
@@ -94,6 +130,10 @@ export const POST: RequestHandler = async ({ request, locals: { user } }) => {
 			{ onConflict: 'account_id,as_of_date' }
 		);
 	}
+
+	// Release any earlier link to this same institution, now that its accounts
+	// have been re-pointed at the item we just created.
+	await releaseSupersededItems(user.id, itemRow.id, institutionId);
 
 	await syncItem(itemRow.id);
 

@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import SyncIndicator from '$lib/components/SyncIndicator.svelte';
 	import type { LayoutProps } from './$types';
 
-	let { children }: LayoutProps = $props();
+	let { children, data }: LayoutProps = $props();
 
 	const nav = [
 		{ href: '/dashboard', label: 'Dashboard' },
@@ -32,6 +33,8 @@
 				</a>
 			{/each}
 		</nav>
+
+		<SyncIndicator stale={data.syncStale} />
 
 		<form method="POST" action="/logout">
 			<button

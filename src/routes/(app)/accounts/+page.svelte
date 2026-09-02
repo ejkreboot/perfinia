@@ -1,7 +1,12 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
-	import { accountGroupLabel, accountGroupOrder, accountTypeLabel } from '$lib/accountTypes';
+	import {
+		accountDisplayName,
+		accountGroupLabel,
+		accountGroupOrder,
+		accountTypeLabel
+	} from '$lib/accountTypes';
 	import { formatCurrency } from '$lib/format';
 	import PlaidLinkButton from '$lib/components/PlaidLinkButton.svelte';
 	import type { PageProps } from './$types';
@@ -9,6 +14,8 @@
 	let { data }: PageProps = $props();
 
 	let syncing = $state(false);
+	let confirmingRemoval = $state<string | null>(null);
+	let renaming = $state<string | null>(null);
 
 	async function syncNow() {
 		syncing = true;
@@ -101,26 +108,119 @@
 			<div class="divide-y divide-ink/10 overflow-hidden rounded-xl border border-ink/10 bg-white">
 				{#each group.accounts as account (account.id)}
 					<div class="flex items-center justify-between gap-4 px-5 py-4">
-						<a href="/accounts/{account.id}" class="min-w-0 flex-1">
-							<p class="truncate font-medium text-ink">{account.name}</p>
-							<p class="text-xs text-ink/50">
-								{accountTypeLabel(account.type, account.subtype)}
-								{account.is_manual ? '· Manual' : ''}
-							</p>
-						</a>
-						<p class="font-mono-nums text-sm font-medium {account.is_asset ? 'text-ink' : 'text-plum'}">
-							{formatCurrency(account.current_balance ?? 0, account.iso_currency_code)}
-						</p>
-						<form method="POST" action="?/archive" use:enhance>
-							<input type="hidden" name="id" value={account.id} />
-							<button
-								type="submit"
-								class="text-xs text-ink/40 hover:text-plum"
-								title="Archive account"
+						{#if renaming === account.id}
+							<form
+								method="POST"
+								action="?/rename"
+								class="flex min-w-0 flex-1 items-center gap-2"
+								use:enhance={() => {
+									return async ({ update }) => {
+										renaming = null;
+										await update();
+									};
+								}}
 							>
-								Archive
-							</button>
-						</form>
+								<input type="hidden" name="id" value={account.id} />
+								<!-- svelte-ignore a11y_autofocus -->
+								<input
+									name="nickname"
+									autofocus
+									value={account.nickname ?? ''}
+									placeholder={account.name}
+									aria-label="Nickname for {account.name}"
+									class="min-w-0 flex-1 rounded-lg border-ink/15 bg-white py-1.5 text-sm text-ink shadow-sm focus:border-channel focus:ring-channel"
+									onkeydown={(e) => {
+										if (e.key === 'Escape') renaming = null;
+									}}
+								/>
+								<button type="submit" class="text-xs font-medium text-channel hover:underline">
+									Save
+								</button>
+								<button
+									type="button"
+									onclick={() => (renaming = null)}
+									class="text-xs text-ink/40 hover:text-ink"
+								>
+									Cancel
+								</button>
+							</form>
+						{:else}
+							<a href="/accounts/{account.id}" class="min-w-0 flex-1">
+								<p class="truncate font-medium text-ink">{accountDisplayName(account)}</p>
+								<p class="truncate text-xs text-ink/50">
+									{accountTypeLabel(account.type, account.subtype)}
+									{account.mask ? `· ••••${account.mask}` : ''}
+									{account.nickname ? `· ${account.name}` : ''}
+									{account.is_manual ? '· Manual' : ''}
+								</p>
+							</a>
+							<p
+								class="font-mono-nums text-sm font-medium {account.is_asset
+									? 'text-ink'
+									: 'text-plum'}"
+							>
+								{formatCurrency(account.current_balance ?? 0, account.iso_currency_code)}
+							</p>
+							{#if confirmingRemoval === account.id}
+								<div class="flex shrink-0 items-center gap-3">
+									<p class="text-xs text-plum">
+										Delete {account.transactionCount.toLocaleString()}
+										{account.transactionCount === 1 ? 'transaction' : 'transactions'}?
+									</p>
+									<form
+										method="POST"
+										action="?/remove"
+										use:enhance={() => {
+											return async ({ update }) => {
+												confirmingRemoval = null;
+												await update();
+											};
+										}}
+									>
+										<input type="hidden" name="id" value={account.id} />
+										<button type="submit" class="text-xs font-medium text-plum hover:underline">
+											Delete
+										</button>
+									</form>
+									<button
+										type="button"
+										onclick={() => (confirmingRemoval = null)}
+										class="text-xs text-ink/40 hover:text-ink"
+									>
+										Cancel
+									</button>
+								</div>
+							{:else}
+								<div class="flex shrink-0 items-center gap-3">
+									<button
+										type="button"
+										onclick={() => (renaming = account.id)}
+										class="text-xs text-ink/40 hover:text-ink"
+										title="Give this account a nickname"
+									>
+										Rename
+									</button>
+									<form method="POST" action="?/archive" use:enhance>
+										<input type="hidden" name="id" value={account.id} />
+										<button
+											type="submit"
+											class="text-xs text-ink/40 hover:text-ink"
+											title="Hide from Perfinia, keep history"
+										>
+											Archive
+										</button>
+									</form>
+									<button
+										type="button"
+										onclick={() => (confirmingRemoval = account.id)}
+										class="text-xs text-ink/40 hover:text-plum"
+										title="Permanently delete this account and its history"
+									>
+										Remove
+									</button>
+								</div>
+							{/if}
+						{/if}
 					</div>
 				{/each}
 			</div>

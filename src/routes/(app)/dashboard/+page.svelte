@@ -112,23 +112,11 @@
 				<p class="mt-3 text-sm text-ink/70">
 					Base income covers your essential, savings, and debt commitments this month.
 				</p>
-			{:else if data.insight.hasShiftEstimate}
-				<p class="mt-3 text-sm text-ink/70">
-					You're short {formatCurrency(data.insight.shortfall)} against this month's committed
-					spend.
-				</p>
-				<p class="mt-2 text-lg font-semibold text-clay">
-					~{data.insight.shiftsNeeded} extra shift{data.insight.shiftsNeeded === 1 ? '' : 's'}
-				</p>
-				<p class="mt-1 text-xs text-ink/50">would close the gap.</p>
 			{:else}
 				<p class="mt-3 text-sm text-ink/70">
 					You're short {formatCurrency(data.insight.shortfall)} against this month's committed
 					spend.
 				</p>
-				<a href="/settings" class="mt-2 inline-block text-xs text-channel underline"
-					>Set a per-shift estimate to see how many shifts would close the gap.</a
-				>
 			{/if}
 		</div>
 	</div>

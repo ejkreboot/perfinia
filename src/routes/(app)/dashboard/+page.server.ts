@@ -1,5 +1,4 @@
 import type { PageServerLoad } from './$types';
-import { maybeSyncStaleItems } from '$lib/server/plaid/autoSync';
 import { computeNetWorthSeries } from '$lib/netWorthSeries';
 import { detectRecurringMerchants } from '$lib/server/recurring';
 
@@ -13,20 +12,14 @@ function monthsAgo(n: number): string {
 	return new Date(now.getFullYear(), now.getMonth() - n, now.getDate()).toISOString().slice(0, 10);
 }
 
-export const load: PageServerLoad = async ({ locals: { supabase, user } }) => {
-	await maybeSyncStaleItems(user!.id);
-
-	const [{ data: accounts }, { data: flows }, { data: profile }] = await Promise.all([
-		supabase
-			.from('accounts')
-			.select('id, is_asset, current_balance')
-			.eq('is_archived', false),
+export const load: PageServerLoad = async ({ locals: { supabase } }) => {
+	const [{ data: accounts }, { data: flows }] = await Promise.all([
+		supabase.from('accounts').select('id, is_asset, current_balance').eq('is_archived', false),
 		supabase
 			.from('flows')
 			.select('id, name, slug, direction, counts_toward_totals, monthly_target, color, sort_order')
 			.eq('is_archived', false)
-			.order('sort_order'),
-		supabase.from('profiles').select('default_shift_income_estimate').eq('id', user!.id).single()
+			.order('sort_order')
 	]);
 
 	const accountList = accounts ?? [];
@@ -86,7 +79,8 @@ export const load: PageServerLoad = async ({ locals: { supabase, user } }) => {
 		}))
 		.filter((f) => f.amount > 0);
 
-	const savingsRate = incomeTotal > 0 ? (flows ?? []).find((f) => f.slug === 'savings_investing') : null;
+	const savingsRate =
+		incomeTotal > 0 ? (flows ?? []).find((f) => f.slug === 'savings_investing') : null;
 	const savingsAmount = savingsRate ? (flowTotals.get(savingsRate.id) ?? 0) : 0;
 	const savingsRatePct = incomeTotal > 0 ? savingsAmount / incomeTotal : null;
 
@@ -94,15 +88,12 @@ export const load: PageServerLoad = async ({ locals: { supabase, user } }) => {
 	const savingsFlow = (flows ?? []).find((f) => f.slug === 'savings_investing');
 	const debtFlow = (flows ?? []).find((f) => f.slug === 'debt_paydown');
 
-	const essentialTarget = essentialFlow?.monthly_target ?? flowTotals.get(essentialFlow?.id ?? '') ?? 0;
+	const essentialTarget =
+		essentialFlow?.monthly_target ?? flowTotals.get(essentialFlow?.id ?? '') ?? 0;
 	const savingsTarget = savingsFlow?.monthly_target ?? 0;
 	const debtTarget = debtFlow?.monthly_target ?? 0;
 	const totalCommitted = essentialTarget + savingsTarget + debtTarget;
 	const shortfall = totalCommitted - baseIncomeTotal;
-
-	const shiftEstimate = profile?.default_shift_income_estimate ?? null;
-	const shiftsNeeded =
-		shortfall > 0 && shiftEstimate && shiftEstimate > 0 ? Math.ceil(shortfall / shiftEstimate) : null;
 
 	const { data: recentTransactions } = await supabase
 		.from('transactions')
@@ -139,9 +130,7 @@ export const load: PageServerLoad = async ({ locals: { supabase, user } }) => {
 		insight: {
 			baseIncomeTotal,
 			totalCommitted,
-			shortfall,
-			shiftsNeeded,
-			hasShiftEstimate: !!shiftEstimate
+			shortfall
 		},
 		recentTransactions: recentTransactions ?? [],
 		uncategorizedCount: uncategorizedCount ?? 0,

@@ -3,9 +3,13 @@ import { CountryCode, Products } from 'plaid';
 import type { RequestHandler } from './$types';
 import { plaidClient } from '$lib/server/plaid/client';
 import { PLAID_WEBHOOK_URL } from '$env/static/private';
+import { checkRateLimit } from '$lib/server/rateLimit';
 
 export const POST: RequestHandler = async ({ locals: { user } }) => {
 	if (!user) kitError(401, 'Not authenticated');
+
+	const allowed = await checkRateLimit(`plaid_link:${user.id}`, 20, 60 * 60);
+	if (!allowed) kitError(429, 'Too many requests. Try again later.');
 
 	const response = await plaidClient.linkTokenCreate({
 		user: { client_user_id: user.id },

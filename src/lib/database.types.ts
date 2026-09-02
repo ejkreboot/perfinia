@@ -22,6 +22,7 @@ export type Database = {
 					iso_currency_code: string;
 					mask: string | null;
 					name: string;
+					nickname: string | null;
 					official_name: string | null;
 					plaid_account_id: string | null;
 					plaid_item_id: string | null;
@@ -43,6 +44,7 @@ export type Database = {
 					iso_currency_code?: string;
 					mask?: string | null;
 					name: string;
+					nickname?: string | null;
 					official_name?: string | null;
 					plaid_account_id?: string | null;
 					plaid_item_id?: string | null;
@@ -64,6 +66,7 @@ export type Database = {
 					iso_currency_code?: string;
 					mask?: string | null;
 					name?: string;
+					nickname?: string | null;
 					official_name?: string | null;
 					plaid_account_id?: string | null;
 					plaid_item_id?: string | null;
@@ -351,21 +354,18 @@ export type Database = {
 			profiles: {
 				Row: {
 					created_at: string;
-					default_shift_income_estimate: number | null;
 					display_name: string | null;
 					email: string | null;
 					id: string;
 				};
 				Insert: {
 					created_at?: string;
-					default_shift_income_estimate?: number | null;
 					display_name?: string | null;
 					email?: string | null;
 					id: string;
 				};
 				Update: {
 					created_at?: string;
-					default_shift_income_estimate?: number | null;
 					display_name?: string | null;
 					email?: string | null;
 					id?: string;
@@ -506,12 +506,37 @@ export type Database = {
 					}
 				];
 			};
+			rate_limit_buckets: {
+				Row: {
+					count: number;
+					key: string;
+					window_start: string;
+				};
+				Insert: {
+					count?: number;
+					key: string;
+					window_start: string;
+				};
+				Update: {
+					count?: number;
+					key?: string;
+					window_start?: string;
+				};
+				Relationships: [];
+			};
 		};
 		Views: {
 			[_ in never]: never;
 		};
 		Functions: {
-			[_ in never]: never;
+			perfinia_check_rate_limit: {
+				Args: {
+					p_key: string;
+					p_limit: number;
+					p_window_seconds: number;
+				};
+				Returns: boolean;
+			};
 		};
 		Enums: {
 			[_ in never]: never;

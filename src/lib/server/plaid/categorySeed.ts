@@ -81,8 +81,8 @@ export const DEFAULT_CATEGORIES: CategorySeed[] = [
 	// Income
 	{ slug: 'salary_wages', name: 'Salary & Wages', flowSlug: 'income' },
 	{
-		slug: 'extra_shifts',
-		name: 'Extra Shifts',
+		slug: 'other_earned_income',
+		name: 'Other Earned Income',
 		flowSlug: 'income',
 		isSupplementalIncome: true
 	},

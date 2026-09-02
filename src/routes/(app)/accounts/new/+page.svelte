@@ -27,8 +27,8 @@
 	<a href="/accounts" class="text-sm text-ink/50 hover:text-ink">&larr; Accounts</a>
 	<h1 class="font-display mt-2 text-2xl font-semibold">Add a manual account</h1>
 	<p class="mt-1 text-sm text-ink/60">
-		For anything not linked through Plaid — a 401(k) held elsewhere, home equity, a paper
-		savings bond. You'll be able to link real institutions once Plaid is connected.
+		For anything not linked through Plaid — a 401(k) held elsewhere, home equity, a paper savings
+		bond. You'll be able to link real institutions once Plaid is connected.
 	</p>
 
 	<form

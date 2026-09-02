@@ -24,7 +24,7 @@ export const load: PageServerLoad = async ({ locals: { supabase, user }, url }) 
 		.from('transactions')
 		.select(
 			`id, date, name, merchant_name, amount, pending, category_id, category_source, is_transfer,
-			 accounts ( id, name, iso_currency_code ),
+			 accounts ( id, name, nickname, iso_currency_code ),
 			 categories ( id, name, flow_id, flows ( id, name, color ) )`
 		)
 		.order('date', { ascending: false })
@@ -43,7 +43,7 @@ export const load: PageServerLoad = async ({ locals: { supabase, user }, url }) 
 
 	const [{ data: accounts }, { data: categories }, { data: flows }, { count: uncategorizedCount }] =
 		await Promise.all([
-			supabase.from('accounts').select('id, name').eq('is_archived', false).order('name'),
+			supabase.from('accounts').select('id, name, nickname').eq('is_archived', false).order('name'),
 			supabase
 				.from('categories')
 				.select('id, name, flow_id, flows ( name )')

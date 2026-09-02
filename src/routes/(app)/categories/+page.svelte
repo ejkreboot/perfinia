@@ -93,7 +93,7 @@
 					name="is_supplemental_income"
 					class="rounded border-ink/30 text-channel focus:ring-channel"
 				/>
-				Supplemental income (e.g. extra shifts)
+				Supplemental income (e.g. bonuses, overtime)
 			</label>
 			<button
 				type="submit"

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
+	import { accountDisplayName } from '$lib/accountTypes';
 	import { formatCurrency, formatDate } from '$lib/format';
 	import type { PageProps } from './$types';
 
@@ -65,7 +66,10 @@
 			href="/transactions?uncategorized=1"
 			class="mt-4 block rounded-lg border border-clay/30 bg-clay/10 px-4 py-3 text-sm text-clay hover:bg-clay/15"
 		>
-			{data.uncategorizedCount} transaction{data.uncategorizedCount === 1 ? '' : 's'} need{data.uncategorizedCount === 1 ? 's' : ''}
+			{data.uncategorizedCount} transaction{data.uncategorizedCount === 1 ? '' : 's'} need{data.uncategorizedCount ===
+			1
+				? 's'
+				: ''}
 			a category &rarr;
 		</a>
 	{/if}
@@ -74,7 +78,10 @@
 		<p class="mt-4 text-sm text-channel">{toast}</p>
 	{/if}
 
-	<form method="GET" class="mt-6 flex flex-wrap items-end gap-3 rounded-xl border border-ink/10 bg-white p-4">
+	<form
+		method="GET"
+		class="mt-6 flex flex-wrap items-end gap-3 rounded-xl border border-ink/10 bg-white p-4"
+	>
 		<div>
 			<label for="q" class="block text-xs font-medium text-ink/50">Search</label>
 			<input
@@ -96,7 +103,7 @@
 				<option value="" selected={!data.filters.accountId}>All accounts</option>
 				{#each data.accounts as account (account.id)}
 					<option value={account.id} selected={data.filters.accountId === account.id}
-						>{account.name}</option
+						>{accountDisplayName(account)}</option
 					>
 				{/each}
 			</select>
@@ -169,7 +176,9 @@
 									<span class="text-xs text-clay">Pending</span>
 								{/if}
 							</td>
-							<td class="px-4 py-3 whitespace-nowrap text-ink/60">{tx.accounts?.name ?? '—'}</td>
+							<td class="px-4 py-3 whitespace-nowrap text-ink/60"
+								>{tx.accounts ? accountDisplayName(tx.accounts) : '—'}</td
+							>
 							<td class="px-4 py-3">
 								<select
 									value={tx.category_id ?? ''}

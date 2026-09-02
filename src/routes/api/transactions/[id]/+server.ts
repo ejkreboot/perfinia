@@ -25,6 +25,18 @@ export const PATCH: RequestHandler = async ({ params, request, locals: { user } 
 
 	if (txError || !tx || tx.user_id !== user.id) kitError(404, 'Transaction not found');
 
+	// supabaseAdmin bypasses RLS, so category ownership must be checked
+	// explicitly — otherwise a caller could point this transaction at another
+	// user's category id and leak its name/color via the transactions join.
+	const { data: category } = await supabaseAdmin
+		.from('categories')
+		.select('id')
+		.eq('id', categoryId)
+		.eq('user_id', user.id)
+		.maybeSingle();
+
+	if (!category) kitError(404, 'Category not found');
+
 	const { error: updateError } = await supabaseAdmin
 		.from('transactions')
 		.update({ category_id: categoryId, category_source: 'user_manual' })

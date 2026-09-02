@@ -1,9 +1,8 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
 	import PlaidLinkButton from '$lib/components/PlaidLinkButton.svelte';
 	import type { PageProps } from './$types';
 
-	let { data, form }: PageProps = $props();
+	let { data }: PageProps = $props();
 
 	function statusLabel(status: string): string {
 		switch (status) {
@@ -82,48 +81,5 @@
 				{/each}
 			</div>
 		{/if}
-	</div>
-
-	<div class="mt-10">
-		<h2 class="mb-3 text-xs font-medium tracking-wide text-ink/50 uppercase">Extra shifts</h2>
-		<div class="rounded-xl border border-ink/10 bg-white p-5">
-			<p class="text-sm text-ink/60">
-				What does one extra shift typically net you, after taxes? The dashboard uses this to turn
-				an income shortfall into "pick up about N shifts" instead of just a dollar figure.
-			</p>
-			<form
-				method="POST"
-				action="?/updateProfile"
-				use:enhance
-				class="mt-4 flex items-end gap-3"
-			>
-				<div>
-					<label for="shift-estimate" class="block text-xs font-medium text-ink/60"
-						>Per-shift take-home</label
-					>
-					<div class="relative mt-1">
-						<span class="absolute top-2.5 left-3 text-ink/40">$</span>
-						<input
-							id="shift-estimate"
-							name="default_shift_income_estimate"
-							type="number"
-							step="0.01"
-							value={data.profile.default_shift_income_estimate ?? ''}
-							placeholder="e.g. 600"
-							class="font-mono-nums block w-40 rounded-lg border-ink/15 bg-white pl-7 text-sm text-ink shadow-sm focus:border-channel focus:ring-channel"
-						/>
-					</div>
-				</div>
-				<button
-					type="submit"
-					class="rounded-lg bg-ink px-4 py-2 text-sm font-medium text-paper transition hover:bg-ink-soft"
-				>
-					Save
-				</button>
-			</form>
-			{#if form?.error}
-				<p class="mt-3 text-sm text-plum" role="alert">{form.error}</p>
-			{/if}
-		</div>
 	</div>
 </div>
