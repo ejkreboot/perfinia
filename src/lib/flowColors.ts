@@ -1,7 +1,15 @@
 // The closed set of flow colors (see src/routes/layout.css @theme). Kept
 // closed rather than a free-form picker so every chart/badge in the app
 // draws from the same coherent palette no matter how many flows a user adds.
-export const FLOW_COLOR_TOKENS = ['gold', 'channel', 'clay', 'sage', 'plum', 'mist'] as const;
+export const FLOW_COLOR_TOKENS = [
+	'gold',
+	'channel',
+	'clay',
+	'sage',
+	'plum',
+	'iris',
+	'mist'
+] as const;
 
 export type FlowColorToken = (typeof FLOW_COLOR_TOKENS)[number];
 
@@ -19,11 +27,15 @@ export function flowColorVar(color: string | null): string {
 // marks. Keyed by flow slug so the 5 default flows that actually compete in
 // the flow-allocation chart get validated colors; Transfers is excluded from
 // totals and essentially never appears as an active series, so it keeps a
-// plain neutral gray rather than forcing a 6th hue into the validated set.
+// plain neutral gray rather than forcing another hue into the validated set.
+// Re-validated when Reclaimable was added: the six competing series pass the
+// lightness band, chroma floor, CVD adjacent-pair separation (worst 12.5 ΔE
+// deutan), and normal-vision floor against the #eff2ed paper surface.
 const FLOW_CHART_COLORS: Record<string, string> = {
 	income: '#eda100',
 	fixed_essential: '#2a78d6',
 	discretionary_goals: '#1baf7a',
+	reclaimable: '#c0389b',
 	savings_investing: '#008300',
 	debt_paydown: '#4a3aa7',
 	transfers: '#8a8f98'

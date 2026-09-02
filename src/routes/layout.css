@@ -28,6 +28,8 @@
 	--color-sage: #6b8f71;
 	/* Debt Paydown */
 	--color-plum: #7a4b5e;
+	/* Reclaimable */
+	--color-iris: #6b6193;
 	/* Transfers (excluded from totals) */
 	--color-mist: #8b8f8a;
 }

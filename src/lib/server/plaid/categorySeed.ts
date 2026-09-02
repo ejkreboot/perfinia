@@ -42,11 +42,22 @@ export const DEFAULT_FLOWS: FlowSeed[] = [
 		color: 'clay'
 	},
 	{
+		// Spending that could be eliminated outright rather than merely trimmed.
+		// Split out of Discretionary & Goals so the dashboard can show what's
+		// genuinely recoverable without implying every discretionary dollar is.
+		slug: 'reclaimable',
+		name: 'Reclaimable',
+		direction: 'outflow',
+		countsTowardTotals: true,
+		sortOrder: 3,
+		color: 'iris'
+	},
+	{
 		slug: 'savings_investing',
 		name: 'Savings & Investing',
 		direction: 'outflow',
 		countsTowardTotals: true,
-		sortOrder: 3,
+		sortOrder: 4,
 		color: 'sage'
 	},
 	{
@@ -54,7 +65,7 @@ export const DEFAULT_FLOWS: FlowSeed[] = [
 		name: 'Debt Paydown',
 		direction: 'outflow',
 		countsTowardTotals: true,
-		sortOrder: 4,
+		sortOrder: 5,
 		color: 'plum'
 	},
 	{
@@ -66,7 +77,7 @@ export const DEFAULT_FLOWS: FlowSeed[] = [
 		direction: 'outflow',
 		color: 'mist',
 		countsTowardTotals: false,
-		sortOrder: 5
+		sortOrder: 6
 	}
 ];
 
@@ -111,7 +122,6 @@ export const DEFAULT_CATEGORIES: CategorySeed[] = [
 	{ slug: 'travel', name: 'Travel', flowSlug: 'discretionary_goals' },
 	{ slug: 'personal_care', name: 'Personal Care & Fitness', flowSlug: 'discretionary_goals' },
 	{ slug: 'gifts_donations', name: 'Gifts & Donations', flowSlug: 'discretionary_goals' },
-	{ slug: 'subscriptions', name: 'Subscriptions', flowSlug: 'discretionary_goals' },
 	{ slug: 'hobbies', name: 'Hobbies & Recreation', flowSlug: 'discretionary_goals' },
 	{ slug: 'pets', name: 'Pets', flowSlug: 'discretionary_goals' },
 	{ slug: 'home_improvement', name: 'Home Improvement', flowSlug: 'discretionary_goals' },
@@ -121,6 +131,9 @@ export const DEFAULT_CATEGORIES: CategorySeed[] = [
 		flowSlug: 'discretionary_goals'
 	},
 	{ slug: 'misc_discretionary', name: 'Miscellaneous', flowSlug: 'discretionary_goals' },
+
+	// Reclaimable
+	{ slug: 'subscriptions', name: 'Subscriptions', flowSlug: 'reclaimable' },
 
 	// Savings & Investing
 	{ slug: 'retirement_savings', name: 'Retirement Savings', flowSlug: 'savings_investing' },
